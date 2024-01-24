@@ -12,8 +12,8 @@ clear global
 
 rng default
 [Wb,im2] = occulter(im0,width);
-[Xa,Xtt] = opticalsystem(im1,Wb);
-makefigure(im2,Xtt)
+[Xa,Xt] = opticalsystem(im1,Wb);
+makefigure(im2,Xt.*Xt)
 Ph = zeros(size(Xa));
 Ph = optimize(Ph,Xa,Wb,100);
 
@@ -50,15 +50,15 @@ im = uint8(im*255);
 im = reshape(im,[dims 3]);
 end
 
-function [Xa,Xtt,Ph] = opticalsystem(im,Wb,Ph)
+function [Xa,Xt,Ph] = opticalsystem(im,Wb,Ph)
 if nargin < 3
     Xr = rand(size(im));
     Ph = angle(fft2(Xr));
     assert(isvalid(Ph))
 end
-Xtt = double(im)/255;
-Xtt(Wb) = 0; % Blackout
-Yt = fft2(sqrt(Xtt));
+Xt = sqrt(double(im)/255);
+Xt(Wb) = 0; % Blackout
+Yt = fft2(Xt);
 Ya = Yt.*complex(cos(-Ph),sin(-Ph));
 Xa = real(ifft2(Ya));
 end
@@ -179,7 +179,7 @@ switch state
         SSE(k) = optval.fval;
         Yt = fft2(Xa).*complex(cos(Ph),sin(Ph));
         Xt = real(ifft2(Yt));
-        frame(k) = oneframe(Xt.*Xt,SSE,k > 1);
+        frame(k) = oneframe(Xt.*Xt,SSE);
     case 'done'
         stop = true;
         k = optval.iteration+1;
@@ -188,7 +188,7 @@ switch state
 end
 end
 
-function frame = oneframe(Xtt,SSE,isplot)
+function frame = oneframe(Xtt,SSE)
 [M,N] = size(Xtt);
 maxiter = numel(SSE)-1;
 ratio = [M/5 N/maxiter 1];
@@ -200,15 +200,11 @@ set(gca,'YDir','normal')
 set(gca,'CLim',[0 1])
 colormap(jet(256))
 colorbar
-if isplot
-    hold on
-    plot(0:maxiter,log10(SSE),'cyan-')
-    hold off
-    xlabel('Iteration')
-    ylabel('log_{10} SSE')
-else
-    axis off
-end
+hold on
+plot(0:maxiter,log10(SSE),'cyan-')
+hold off
+xlabel('Iteration')
+ylabel('log_{10} SSE')
 frame = getframe(gcf);
 end
 
