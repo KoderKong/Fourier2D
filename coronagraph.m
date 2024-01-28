@@ -101,10 +101,10 @@ for k = 1:nargin
     close
 end
 try
-    imwrite([frame{:}],'groundtruth.jpg')
+    imwrite([frame{:}],'groundtruth.png')
 catch
     for k = 1:numel(frame)
-        file = 'groundtruth%d.jpg';
+        file = 'groundtruth%d.png';
         imwrite(frame{k},sprintf(file,k));
     end
 end
@@ -230,7 +230,7 @@ end
 release(videoFWriter) % Close file
 im1 = border(frame(1).cdata);
 im2 = border(frame(numFrame).cdata);
-imwrite([im1 im2],strcat(file,'.jpg'))
+imwrite([im1 im2],strcat(file,'.png'))
 end
 
 function [MN,secs,bytes] = complexity(im,width,step)
